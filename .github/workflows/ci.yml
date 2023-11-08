@@ -1,0 +1,127 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  lints:
+    name: Run linters
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Cache pre-commit
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-3|${{ env.pythonLocation }}|${{ hashFiles('.pre-commit-config.yaml') }}
+
+      - name: Install pre-commit
+        run: pip3 install pre-commit
+
+      - name: Run pre-commit checks
+        run: pre-commit run --all-files --show-diff-on-failure --color always
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: "fs"
+          ignore-unfixed: true
+          format: "table"
+          severity: "CRITICAL,HIGH"
+          output: "trivy-scanning-results.txt"
+
+      - name: Create venv
+        run: . ./setup_dev_env.sh
+
+      - name: Check licenses
+        run: ./check_licenses.sh
+
+      - name: Generate pip freeze
+        run: |
+          source venv/bin/activate
+          pip freeze > requirements-freeze.txt
+
+      - name: Publish Artefacts
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: results
+          path: |
+            requirements-freeze.txt
+            licenses.txt
+            trivy-scanning-results.txt
+          retention-days: 30
+
+      - name: Publish Test Report
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: test-report
+          path: report.xml
+          retention-days: 10
+
+      - name: Validate package build
+        run: |
+          source venv/bin/activate
+          python -m pip install -U build
+          python -m build
+
+      - name: Publish Package
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: packages
+          path: dist/**
+          retention-days: 10
+
+  tests:
+    name: Run tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false # do not stop all jobs if one fails
+      matrix:
+        include:
+          - python-version: "3.11"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Cache Dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements-dev.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install Dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Run Tests
+        run: pytest -v -p no:warnings --junitxml=report.xml tests/
+
+      - name: Test Report
+        uses: mikepenz/action-junit-report@v4
+        if: always()
+        with:
+          report_paths: 'report.xml'
+
+      - name: Publish Test Report
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: test-report
+          path: report.xml
+          retention-days: 10
+
