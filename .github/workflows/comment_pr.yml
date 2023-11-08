@@ -8,7 +8,7 @@ on:
 jobs:
   comment_pr:
     permissions:
-      checks: write
+      pull-requests: write
     runs-on: ubuntu-latest
 
     steps:
@@ -26,7 +26,6 @@ jobs:
           path: results
 
       - name: Add trivy report to PR
-        if: github.event_name == 'pull_request'
         uses: thollander/actions-comment-pull-request@v2
         with:
           message: |
@@ -38,7 +37,6 @@ jobs:
           comment_tag: trivy
 
       - name: Add licenses report to PR
-        if: github.event_name == 'pull_request'
         uses: thollander/actions-comment-pull-request@v2
         with:
           message: |
