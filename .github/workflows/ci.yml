@@ -7,8 +7,6 @@ on:
 
 jobs:
   lints:
-    permissions:
-      issues: write
     name: Run linters
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -88,7 +86,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
-      issues: write
+      pull-requests: write
     strategy:
       fail-fast: false # do not stop all jobs if one fails
       matrix:

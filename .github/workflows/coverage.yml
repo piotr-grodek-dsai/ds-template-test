@@ -4,11 +4,11 @@ on:
   workflow_run:
     workflows: ["CI"]
     types:
-      - in_progress
+      - completed
 jobs:
   coverage:
     permissions:
-      issues: write
+      pull-requests: write
     runs-on: ubuntu-latest
 
     steps:
