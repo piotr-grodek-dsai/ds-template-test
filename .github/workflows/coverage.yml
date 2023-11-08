@@ -2,7 +2,8 @@ name: Coverage report
 
 on:
   workflow_run:
-    workflows: ["ci"]
+    workflows:
+        - Continuous Integration
     types:
       - completed
 jobs:
