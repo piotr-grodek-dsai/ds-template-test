@@ -5,7 +5,6 @@ on:
     workflows: ["CI"]
     types:
       - in_progress
-    branches-ignore: [master, main]
 jobs:
   coverage:
     permissions:

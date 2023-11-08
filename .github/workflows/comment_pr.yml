@@ -1,13 +1,10 @@
-name: Reports
+name: Linter Reports
 
 on:
   workflow_run:
-    workflows: ["CI"]
+    workflows: [CI]
     types:
-      - requested
-    branches-ignore:
-      - master
-      - main
+      - completed
 jobs:
   comment_pr:
     permissions:
@@ -19,7 +16,7 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.event.workflow_run.head_commit.id }}
-      - name: Download Coverage Artifacts
+      - name: Download Linter Results Artifacts
         uses: dawidd6/action-download-artifact@v2
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
