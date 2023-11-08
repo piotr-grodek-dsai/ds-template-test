@@ -86,7 +86,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
-      pull-requests: write
+      checks: write
     strategy:
       fail-fast: false # do not stop all jobs if one fails
       matrix:
