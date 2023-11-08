@@ -130,12 +130,6 @@ jobs:
           coverage report
           coverage xml
 
-      - name: Report coverage
-        uses: 5monkeys/cobertura-action@master
-        with:
-          path: report.xml
-          minimum_coverage: 0
-
       - name: Test Report
         uses: mikepenz/action-junit-report@v4
         if: always()
