@@ -7,6 +7,8 @@ on:
 
 jobs:
   lints:
+    permissions:
+      issues: write
     name: Run linters
     runs-on: ubuntu-latest
     timeout-minutes: 10
