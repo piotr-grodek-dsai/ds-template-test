@@ -5,6 +5,7 @@ on:
     workflows:
         - Continuous Integration
         - ci
+        - Run tests
     types:
       - completed
 jobs:

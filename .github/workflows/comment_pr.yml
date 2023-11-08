@@ -4,6 +4,7 @@ on:
   workflow_run:
     workflows:
       - Continuous Integration
+      - Run linters
     types:
       - completed
 jobs:
