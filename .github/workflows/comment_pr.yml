@@ -2,7 +2,7 @@ name: Reports
 
 on:
   workflow_run:
-    workflows: ["Continuous Integration"]
+    workflows: ["ci"]
     types:
       - completed
 jobs:
