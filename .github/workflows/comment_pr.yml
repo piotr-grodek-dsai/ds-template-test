@@ -1,0 +1,50 @@
+name: Reports
+
+on:
+  workflow_run:
+    workflows: ["Continuous Integration"]
+    types:
+      - completed
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.event == 'pull_request' }}
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.workflow_run.head_commit.id }}
+      - name: Download Coverage Artifacts
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          workflow: ${{ github.event.workflow_run.workflow_id }}
+          commit: ${{ github.event.workflow_run.head_commit.id }}
+          name: results
+          path: results
+
+      - name: Add trivy report to PR
+        if: github.event_name == 'pull_request'
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          message: |
+            ```
+            **Trivy vulnerability scanning results:**
+            $(cat results/trivy-scanning-results.txt)
+            ```
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          comment_tag: trivy
+
+      - name: Add licenses report to PR
+        if: github.event_name == 'pull_request'
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          message: |
+            ```
+            **License check results:**
+
+            $(cat resultslicenses.txt)
+            ```
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          comment_tag: trivy
