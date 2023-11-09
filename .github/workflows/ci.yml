@@ -87,7 +87,8 @@ jobs:
 
       - name: Format trivy message
         run: |
-          echo "Trivy scanning results." >> trivy-scanning-results.txt
+          echo "Trivy scanning results." >> trivy.txt
+          cat trivy-scanning-results.txt >> trivy.txt
 
       - name: Add trivy report to PR
         uses: thollander/actions-comment-pull-request@v2
