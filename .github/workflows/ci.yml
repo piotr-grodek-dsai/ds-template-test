@@ -89,27 +89,9 @@ jobs:
         continue-on-error: true
         if: ${{ github.event_name == 'pull_request' }}
         with:
-          message: |
-            ```
-            **Trivy vulnerability scanning results:**
-            $(cat trivy-scanning-results.txt)
-            ```
+          filePath: trivy-scanning-results.txt
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           comment_tag: trivy
-
-      - name: Add licenses report to PR
-        uses: thollander/actions-comment-pull-request@v2
-        continue-on-error: true
-        if: ${{ github.event_name == 'pull_request' }}
-        with:
-          message: |
-            ```
-            **License check results:**
-
-            $(cat licenses.txt)
-            ```
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          comment_tag: licenses
 
   tests:
     name: Run tests
@@ -164,10 +146,38 @@ jobs:
           path: report.xml
           retention-days: 10
 
-      - name: Produce Coverage report
-        uses: 5monkeys/cobertura-action@v13
-        continue-on-error: true
+      - name: Produce the coverage report
+        uses: insightsengineering/coverage-action@v2
         with:
-          path: report.xml
-          minimum_coverage: 70
-          fail_below_threshold: false
+          # Path to the Cobertura XML report.
+          path: ./report.xml
+          # Minimum total coverage, if you want to the
+          # workflow to enforce it as a standard.
+          # This has no effect if the `fail` arg is set to `false`.
+          threshold: 70
+          # Fail the workflow if the minimum code coverage
+          # reuqirements are not satisfied.
+          fail: false
+          # Publish the rendered output as a PR comment
+          publish: true
+          # Create a coverage diff report.
+          diff: true
+          # Branch to diff against.
+          # Compare the current coverage to the coverage
+          # determined on this branch.
+          diff-branch: ${{ github.event.repository.default_branch }}
+          # This is where the coverage reports for the
+          # `diff-branch` are stored.
+          # Branch is created if it doesn't already exist'.
+          diff-storage: _xml_coverage_reports
+          # A custom title that can be added to the code
+          # coverage summary in the PR comment.
+          coverage-summary-title: "Code Coverage Summary"
+
+      # - name: Produce Coverage report
+      #   uses: 5monkeys/cobertura-action@v13
+      #   continue-on-error: true
+      #   with:
+      #     path: report.xml
+      #     minimum_coverage: 70
+      #     fail_below_threshold: false
