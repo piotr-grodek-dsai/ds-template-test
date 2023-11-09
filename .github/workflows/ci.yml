@@ -150,7 +150,7 @@ jobs:
         uses: insightsengineering/coverage-action@v2
         with:
           # Path to the Cobertura XML report.
-          path: ./report.xml
+          path: coverage.xml
           # Minimum total coverage, if you want to the
           # workflow to enforce it as a standard.
           # This has no effect if the `fail` arg is set to `false`.
@@ -174,10 +174,10 @@ jobs:
           # coverage summary in the PR comment.
           coverage-summary-title: "Code Coverage Summary"
 
-      # - name: Produce Coverage report
-      #   uses: 5monkeys/cobertura-action@v13
-      #   continue-on-error: true
-      #   with:
-      #     path: report.xml
-      #     minimum_coverage: 70
-      #     fail_below_threshold: false
+      - name: Produce Coverage report
+        uses: 5monkeys/cobertura-action@v13
+        continue-on-error: true
+        with:
+          path: coverage.xml
+          minimum_coverage: 70
+          fail_below_threshold: false
