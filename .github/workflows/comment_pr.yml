@@ -46,4 +46,4 @@ jobs:
             $(cat resultslicenses.txt)
             ```
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          comment_tag: trivy
+          comment_tag: licenses

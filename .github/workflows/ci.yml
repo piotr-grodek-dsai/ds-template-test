@@ -10,6 +10,9 @@ jobs:
     name: Run linters
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      checks: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v4
@@ -81,12 +84,40 @@ jobs:
           path: dist/**
           retention-days: 10
 
+      - name: Add trivy report to PR
+        uses: thollander/actions-comment-pull-request@v2
+        continue-on-error: true
+        if: ${{ github.event_name == 'pull_request' }}
+        with:
+          message: |
+            ```
+            **Trivy vulnerability scanning results:**
+            $(cat trivy-scanning-results.txt)
+            ```
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          comment_tag: trivy
+
+      - name: Add licenses report to PR
+        uses: thollander/actions-comment-pull-request@v2
+        continue-on-error: true
+        if: ${{ github.event_name == 'pull_request' }}
+        with:
+          message: |
+            ```
+            **License check results:**
+
+            $(cat licenses.txt)
+            ```
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          comment_tag: licenses
+
   tests:
     name: Run tests
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
       checks: write
+      pull-requests: write
     strategy:
       fail-fast: false # do not stop all jobs if one fails
       matrix:
@@ -119,15 +150,24 @@ jobs:
 
       - name: Test Report
         uses: mikepenz/action-junit-report@v4
+        continue-on-error: true
         if: always()
         with:
           report_paths: 'report.xml'
 
       - name: Publish Test Report
         uses: actions/upload-artifact@v3
+        continue-on-error: true
         if: always()
         with:
           name: test-report
           path: report.xml
           retention-days: 10
 
+      - name: Produce Coverage report
+        uses: 5monkeys/cobertura-action@v13
+        continue-on-error: true
+        with:
+          path: report.xml
+          minimum_coverage: 70
+          fail_below_threshold: false
