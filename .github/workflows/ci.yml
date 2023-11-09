@@ -35,9 +35,10 @@ jobs:
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: "fs"
-          ignore-unfixed: true
+          ignore-unfixed: false
           format: "table"
-          severity: "CRITICAL,HIGH"
+          skip-dirs: docs/,notebooks/
+          severity: "CRITICAL,HIGH,MEDIUM,UKNOWN"
           output: "trivy-scanning-results.txt"
 
       - name: Create venv
@@ -90,6 +91,7 @@ jobs:
         if: ${{ github.event_name == 'pull_request' }}
         with:
           filePath: trivy-scanning-results.txt
+          reactions: ""
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           comment_tag: trivy
 
@@ -100,7 +102,7 @@ jobs:
     permissions:
       checks: write
       pull-requests: write
-      contents: write
+      contents: write # required for advanced coverage reporting (to keep branch)
     strategy:
       fail-fast: false # do not stop all jobs if one fails
       matrix:
@@ -117,7 +119,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements-dev.txt') }}-${{ hashFiles('**/setup.cfg') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements-dev.txt') }}-${{ hashFiles('**/setup.cfg') }}-${{ hashFiles('**/pyproject.toml') }}
           restore-keys: |
             ${{ runner.os }}-pip-
 
@@ -147,19 +149,19 @@ jobs:
           path: report.xml
           retention-days: 10
 
-      - name: Produce Coverage report
-        uses: 5monkeys/cobertura-action@v13
-        continue-on-error: true
-        with:
-          path: coverage.xml
-          minimum_coverage: 70
-          fail_below_threshold: false
+      # simpler version
+      # - name: Produce Coverage report
+      #   uses: 5monkeys/cobertura-action@v13
+      #   continue-on-error: true
+      #   with:
+      #     path: coverage.xml
+      #     minimum_coverage: 70
+      #     fail_below_threshold: false
 
+      # more complex version
       - name: Produce the coverage report
         uses: insightsengineering/coverage-action@v2
         continue-on-error: true
-        # you can add bage:
-        #![Code Coverage](https://raw.githubusercontent.com/$OWNER/$REPO/_xml_coverage_reports/data/main/badge.svg)
         with:
           # Path to the Cobertura XML report.
           path: coverage.xml
