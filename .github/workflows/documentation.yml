@@ -6,6 +6,8 @@ on:
 
 jobs:
   pages:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     container: python:3.11
 
@@ -29,8 +31,8 @@ jobs:
         run: ./build_docs.sh
 
       # uncomment below to publish docs to github pages:
-      # - name: Deploy
-      #   uses: peaceiris/actions-gh-pages@v3
-      #   with:
-      #     github_token: ${{ secrets.GITHUB_TOKEN }}
-      #     publish_dir: ./public
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
